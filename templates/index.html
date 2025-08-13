@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <title>Brand Sentiment Monitor</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <link rel="stylesheet" href="/static/css/styles.css"/>
+
+  <!-- Chart.js (CDN) -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+
+  <!-- Leaflet Map (CDN) -->
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    integrity=""
+    crossorigin=""
+  />
+  <script
+    src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+    integrity=""
+    crossorigin=""
+  ></script>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">🛰️ Brand Sentiment Monitor</div>
+  </header>
+
+  <main class="container">
+    <section class="card">
+      <h2>Search</h2>
+      <form id="queryForm">
+        <div class="grid">
+          <div class="form-group">
+            <label>Brands (comma separated)</label>
+            <input type="text" id="brands" placeholder="e.g., Nike, Adidas" required/>
+          </div>
+          <div class="form-group">
+            <label>Subreddits (comma separated)</label>
+            <input type="text" id="subs" placeholder="e.g., all, Sneakers, running"/>
+          </div>
+          <div class="form-group">
+            <label>Time Filter</label>
+            <select id="timeFilter">
+              <option value="day">day</option>
+              <option value="week" selected>week</option>
+              <option value="month">month</option>
+              <option value="year">year</option>
+              <option value="all">all</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Limit per query</label>
+            <input type="number" id="limit" min="1" max="50" value="15"/>
+          </div>
+          <div class="form-group">
+            <label>Summarize with Gemini</label>
+            <select id="summarize">
+              <option value="true" selected>Yes</option>
+              <option value="false">No</option>
+            </select>
+          </div>
+        </div>
+        <button class="btn" type="submit">Run Monitor</button>
+      </form>
+
+      <div id="alertBox" class="alert hide"></div>
+    </section>
+
+    <section class="stats grid-3">
+      <div class="stat card">
+        <div class="stat-value" id="totalRecords">0</div>
+        <div class="stat-label">Total Mentions</div>
+      </div>
+      <div class="stat card">
+        <div class="stat-value" id="negCount">0</div>
+        <div class="stat-label">Negative Mentions</div>
+      </div>
+      <div class="stat card">
+        <div class="stat-value" id="urgentCount">0</div>
+        <div class="stat-label">Urgent Flags</div>
+      </div>
+    </section>
+
+    <section class="grid-2">
+      <div class="card">
+        <h3>Sentiment Distribution</h3>
+        <canvas id="sentimentPie"></canvas>
+      </div>
+      <div class="card">
+        <h3>Mentions by Subreddit</h3>
+        <canvas id="subredditBar"></canvas>
+      </div>
+    </section>
+
+    <section class="card">
+      <h3>Sentiment Over Time</h3>
+      <canvas id="timeLine"></canvas>
+    </section>
+
+    <section class="card">
+      <h3>Geo Map</h3>
+      <div id="map" class="map"></div>
+    </section>
+
+    <section class="card">
+      <h3>Summary (Key Points)</h3>
+      <ul id="summaryList" class="bullets"></ul>
+    </section>
+
+    <section class="card">
+      <h3>Latest Mentions</h3>
+      <div class="table-wrapper">
+        <table class="table" id="postsTable">
+          <thead>
+            <tr>
+              <th>Time (UTC)</th>
+              <th>Subreddit</th>
+              <th>Title</th>
+              <th>Sentiment</th>
+              <th>Urgent</th>
+              <th>Score</th>
+              <th>Comments</th>
+              <th>Link</th>
+            </tr>
+          </thead>
+          <tbody id="postsBody"></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">© Brand Monitoring • Simple UI</footer>
+
+  <script src="/static/js/main.js"></script>
+</body>
+</html>

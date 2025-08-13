@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Reddit Brand Mentions Map</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <style>
+        body { margin: 0; padding: 0; font-family: Arial, sans-serif; }
+        #map { height: 600px; }
+        #controls { padding: 10px; background: #f9f9f9; }
+        label { margin-right: 10px; }
+        input, select { margin-right: 20px; padding: 5px; }
+    </style>
+</head>
+<body>
+    <h2>Reddit Brand Mentions Map</h2>
+    <div id="controls">
+        <label>Brands (comma-separated): <input id="brands" value="Nike, adidas" /></label>
+        <label>Subreddits (comma-separated): <input id="subreddits" value="london, newyork" /></label>
+        <label>Time Filter:
+            <select id="time_filter">
+                <option value="hour">Last hour</option>
+                <option value="day">Last day</option>
+                <option value="week" selected>Last week</option>
+                <option value="month">Last month</option>
+                <option value="year">Last year</option>
+                <option value="all">All time</option>
+            </select>
+        </label>
+        <label>Limit per query: <input type="number" id="limit" value="20" min="1" max="100" /></label>
+        <button onclick="loadData()">Load Data</button>
+    </div>
+    <div id="map"></div>
+
+    <script>
+    const map = L.map('map').setView([20, 0], 2);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 18 }).addTo(map);
+    const markersGroup = L.layerGroup().addTo(map);
+
+    async function loadData() {
+        const brandsInput = document.getElementById('brands').value.trim();
+        const subredditsInput = document.getElementById('subreddits').value.trim();
+        const timeFilter = document.getElementById('time_filter').value;
+        const limit = parseInt(document.getElementById('limit').value);
+
+        if (!brandsInput) {
+            alert("Please enter at least one brand.");
+            return;
+        }
+
+        const brands = brandsInput.split(',').map(s => s.trim()).filter(s => s.length > 0);
+        const subreddits = subredditsInput.length ? subredditsInput.split(',').map(s => s.trim()).filter(s => s.length > 0) : ["all"];
+
+        try {
+            const response = await fetch("http://127.0.0.1:8000/scrape", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ brands, subreddits, time_filter: timeFilter, limit })
+            });
+            const result = await response.json();
+
+            markersGroup.clearLayers();
+
+            if (result.total_records === 0) {
+                alert("No data found for given inputs.");
+                return;
+            }
+
+            result.data.forEach(item => {
+                if (item.lat && item.lon) {
+                    let popupContent = `
+                        <b>Brand Keyword:</b> ${item.keyword}<br>
+                        <b>Subreddit:</b> ${item.subreddit}<br>
+                        <b>Title:</b> ${item.title}<br>
+                        <b>Location:</b> ${item.location_name || "N/A"}<br>
+                        <b>Author:</b> ${item.author} (Karma: ${item.author_karma})<br>
+                        <b>Score:</b> ${item.score} | <b>Comments:</b> ${item.num_comments}<br>
+                        <a href="${item.url}" target="_blank">View on Reddit</a>
+                    `;
+                    L.marker([item.lat, item.lon]).bindPopup(popupContent).addTo(markersGroup);
+                }
+            });
+        } catch (error) {
+            alert("Failed to load data: " + error);
+            console.error(error);
+        }
+    }
+
+    // Load default data on page load
+    window.onload = loadData;
+    </script>
+</body>
+</html>
