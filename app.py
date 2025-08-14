@@ -14,13 +14,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from geopy.geocoders import Nominatim
 from geotext import GeoText
 
-# --- Load environment variables ---
-from dotenv import load_dotenv
-load_dotenv()
-
-# ========================
-# Sentiment (NLTK VADER)
-# ========================
+# --- Sentiment (NLTK VADER) ---
 import nltk
 from nltk.sentiment import SentimentIntensityAnalyzer
 try:
@@ -47,15 +41,12 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 templates = Jinja2Templates(directory="templates")
 
 # ========================
-# REDDIT CONFIG (from .env)
+# REDDIT CONFIG (env falls back to provided)
 # ========================
-CLIENT_ID = os.getenv("CLIENT_ID")
-CLIENT_SECRET = os.getenv("CLIENT_SECRET")
-USER_AGENT = os.getenv("USER_AGENT")
+CLIENT_ID = "crENgIHzIMhZ1JFdwiQuAw"
+CLIENT_SECRET = "pF-XOIG8I9EQlTjT3qL5PpfquZ8iyw"
+USER_AGENT = "Sentimentanalysis by u/NoBedroom1295" 
 
-# ========================
-# SETTINGS
-# ========================
 MAX_WORKERS = 8
 URGENT_KEYWORDS = ["bad", "hate", "worst", "cancel", "lawsuit", "boycott"]
 URGENT_PATTERN = re.compile('|'.join(URGENT_KEYWORDS), re.IGNORECASE)
@@ -86,17 +77,11 @@ KNOWN_LOCATIONS = {
 }
 
 # ========================
-# GEMINI CONFIG (from .env)
+# GEMINI CONFIG (optional; safe if key not set)
 # ========================
-GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+GEMINI_API_KEY = "AIzaSyAbBHPBAkF7r5tzGM1HoTjQqHQwnuMnos0"
 MODEL_NAME = "gemini-2.5-flash"
 API_URL = f"https://generativelanguage.googleapis.com/v1beta/models/{MODEL_NAME}:generateContent"
-
-# ========================
-# REST OF YOUR EXISTING CODE
-# ========================
-# (Keep your scraping, utils, endpoints, etc. as they are)
-
 
 # ========================
 # REQUEST MODELS
